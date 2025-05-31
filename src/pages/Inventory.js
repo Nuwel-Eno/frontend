@@ -7,7 +7,7 @@ const Inventory = () => {
   const [statusFilter, setStatusFilter] = useState('All');
 
   useEffect(() => {
-    fetch('http://localhost:5000/api/products')
+    fetch('https://backend-o5km.onrender.com/api/products')
       .then(res => res.json())
       .then(data => setProducts(data))
       .catch(err => console.error('Failed to load inventory data:', err));

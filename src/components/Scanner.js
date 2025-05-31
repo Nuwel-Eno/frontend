@@ -10,7 +10,7 @@ const ScannerWithForm = () => {
   const [formData, setFormData] = useState({ name: '', quantity: '', status: 'In Stock' });
 
   useEffect(() => {
-    fetch('http://localhost:5000/api/products')
+    fetch('https://backend-o5km.onrender.com/api/products')
       .then(res => res.json())
       .then(data => setExistingBarcodes(data.map(p => p.barcode)))
       .catch(err => console.error('Fetch error:', err));
@@ -61,7 +61,7 @@ const ScannerWithForm = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     const payload = { ...formData, barcode: detectedCode };
-    fetch('http://localhost:5000/api/products', {
+    fetch('https://backend-o5km.onrender.com/api/products', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)

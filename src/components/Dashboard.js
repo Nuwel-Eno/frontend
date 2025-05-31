@@ -16,7 +16,7 @@ const Dashboard = () => {
   const navigate = useNavigate();
 
   const fetchProducts = () => {
-    fetch('http://localhost:5000/api/products')
+    fetch('https://backend-o5km.onrender.com/api/products')
       .then(res => res.json())
       .then(data => setProducts(data))
       .catch(() => toast.error("Error fetching products"));
@@ -60,7 +60,7 @@ const Dashboard = () => {
         const uploadForm = new FormData();
         uploadForm.append('video', blob, `admin-session-${Date.now()}.webm`);
 
-        fetch('http://localhost:5000/api/session/log', {
+        fetch('https://backend-o5km.onrender.com/api/session/log', {
           method: 'POST',
           body: uploadForm,
         })
@@ -99,8 +99,8 @@ const Dashboard = () => {
     e.preventDefault();
     const method = isEditing ? 'PUT' : 'POST';
     const url = isEditing
-      ? `http://localhost:5000/api/products/${editId}`
-      : 'http://localhost:5000/api/products';
+      ? `https://backend-o5km.onrender.com/api/products/${editId}`
+      : 'https://backend-o5km.onrender.com/api/products';
 
     fetch(url, {
       method,
@@ -130,7 +130,8 @@ const Dashboard = () => {
 
   const handleDelete = (id) => {
     if (!window.confirm("Are you sure you want to delete this product?")) return;
-    fetch(`http://localhost:5000/api/products/${id}`, {
+    fetch(`https://backend-o5km.onrender.com/api/products/${id}`,
+       {
       method: 'DELETE'
     })
     .then(res => res.json())
