@@ -7,6 +7,7 @@ import '../styles/Dashboard.css';
 const Dashboard = () => {
   const videoRef = useRef(null);
   const mediaRecorderRef = useRef(null);
+  const recordedChunksRef = useRef([]);
   const [stream, setStream] = useState(null);
   const [products, setProducts] = useState([]);
   const [formData, setFormData] = useState({ name: '', quantity: '', status: 'In Stock' });
@@ -41,38 +42,12 @@ const Dashboard = () => {
       };
 
       const recorder = new MediaRecorder(mediaStream, options);
-      let chunks = [];
+      recordedChunksRef.current = [];
 
-      recorder.ondataavailable = event => {
+      recorder.ondataavailable = (event) => {
         if (event.data.size > 0) {
-          chunks.push(event.data);
+          recordedChunksRef.current.push(event.data);
         }
-      };
-
-      recorder.onstop = () => {
-        if (chunks.length === 0) {
-          toast.error('No video recorded.');
-          navigate('/login');
-          return;
-        }
-
-        const blob = new Blob(chunks, { type: 'video/webm' });
-        const uploadForm = new FormData();
-        uploadForm.append('video', blob, `admin-session-${Date.now()}.webm`);
-
-        fetch('https://backend-o5km.onrender.com/api/session/log', {
-          method: 'POST',
-          body: uploadForm,
-        })
-          .then(res => res.json())
-          .then(() => {
-            toast.success('Session video saved successfully!');
-            navigate('/login');
-          })
-          .catch(() => {
-            toast.error('Failed to upload session video.');
-            navigate('/login');
-          });
       };
 
       mediaRecorderRef.current = recorder;
@@ -82,6 +57,38 @@ const Dashboard = () => {
 
   const handleLogout = () => {
     if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
+      mediaRecorderRef.current.onstop = async () => {
+        const blob = new Blob(recordedChunksRef.current, { type: 'video/webm' });
+
+        if (recordedChunksRef.current.length === 0 || blob.size === 0) {
+          toast.error('No video recorded.');
+          navigate('/login');
+          return;
+        }
+
+        const uploadForm = new FormData();
+        uploadForm.append('video', blob, `admin-session-${Date.now()}.webm`);
+
+        try {
+          const res = await fetch('https://backend-o5km.onrender.com/api/session/log', {
+            method: 'POST',
+            body: uploadForm,
+          });
+
+          const data = await res.json();
+
+          if (res.ok) {
+            toast.success('Session video uploaded!');
+          } else {
+            toast.error(`Upload failed: ${data.msg || 'Unknown error'}`);
+          }
+        } catch (error) {
+          toast.error('Failed to upload session video.');
+        }
+
+        navigate('/login');
+      };
+
       mediaRecorderRef.current.stop();
     }
 
@@ -130,8 +137,7 @@ const Dashboard = () => {
 
   const handleDelete = (id) => {
     if (!window.confirm("Are you sure you want to delete this product?")) return;
-    fetch(`https://backend-o5km.onrender.com/api/products/${id}`,
-       {
+    fetch(`https://backend-o5km.onrender.com/api/products/${id}`, {
       method: 'DELETE'
     })
     .then(res => res.json())
